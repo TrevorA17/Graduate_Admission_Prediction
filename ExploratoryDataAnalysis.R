@@ -56,3 +56,17 @@ anova_result <- aov(Chance_of_Admit ~ University_Rating, data = admission_data)
 # Summary of ANOVA results
 summary(anova_result)
 
+# Univariate Plots
+# Histogram of GRE Score
+hist(admission_data$GRE_Score, main = "Histogram of GRE Score", xlab = "GRE Score", col = "skyblue", border = "black")
+
+# Boxplot of TOEFL Score
+boxplot(admission_data$TOEFL_Score, main = "Boxplot of TOEFL Score", ylab = "TOEFL Score", col = "lightgreen", border = "black")
+
+# Multivariate Plots
+# Scatterplot of CGPA vs. Chance of Admit
+plot(admission_data$CGPA, admission_data$Chance_of_Admit, main = "Scatterplot of CGPA vs. Chance of Admit", xlab = "CGPA", ylab = "Chance of Admit", col = "blue", pch = 16)
+
+# Scatterplot Matrix for numeric variables
+pairs(admission_data[, c("GRE_Score", "TOEFL_Score", "CGPA", "Chance_of_Admit")], main = "Scatterplot Matrix", col = "darkorange")
+
