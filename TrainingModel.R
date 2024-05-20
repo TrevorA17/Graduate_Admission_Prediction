@@ -62,3 +62,39 @@ cv_model <- train(Chance_of_Admit ~ ., data = train_data, method = "lm", trContr
 # Display the cross-validation results
 print(cv_model)
 
+# Load necessary libraries
+library(caret)
+library(rpart)
+library(randomForest)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Train a Linear Regression model
+lm_model <- train(Chance_of_Admit ~ ., data = train_data, method = "lm")
+print("Linear Regression Model:")
+print(lm_model)
+
+# Train a Decision Tree model
+dt_model <- train(Chance_of_Admit ~ ., data = train_data, method = "rpart")
+print("Decision Tree Model:")
+print(dt_model)
+
+# Train a Random Forest model
+rf_model <- train(Chance_of_Admit ~ ., data = train_data, method = "rf")
+print("Random Forest Model:")
+print(rf_model)
+
+# Make predictions on the test set for each model
+lm_predictions <- predict(lm_model, newdata = test_data)
+dt_predictions <- predict(dt_model, newdata = test_data)
+rf_predictions <- predict(rf_model, newdata = test_data)
+
+# Evaluate model performance
+lm_rmse <- sqrt(mean((lm_predictions - test_data$Chance_of_Admit)^2))
+dt_rmse <- sqrt(mean((dt_predictions - test_data$Chance_of_Admit)^2))
+rf_rmse <- sqrt(mean((rf_predictions - test_data$Chance_of_Admit)^2))
+
+cat("RMSE for Linear Regression:", lm_rmse, "\n")
+cat("RMSE for Decision Tree:", dt_rmse, "\n")
+cat("RMSE for Random Forest:", rf_rmse, "\n")
