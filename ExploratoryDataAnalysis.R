@@ -49,3 +49,10 @@ toefl_chance_cor <- cor(admission_data$TOEFL_Score, admission_data$Chance_of_Adm
 print("Correlation between TOEFL Score and Chance of Admit:")
 print(toefl_chance_cor)
 
+# Perform ANOVA
+# Considering University Rating as a factor variable
+anova_result <- aov(Chance_of_Admit ~ University_Rating, data = admission_data)
+
+# Summary of ANOVA results
+summary(anova_result)
+
