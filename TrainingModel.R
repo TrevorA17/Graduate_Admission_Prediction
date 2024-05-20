@@ -98,3 +98,19 @@ rf_rmse <- sqrt(mean((rf_predictions - test_data$Chance_of_Admit)^2))
 cat("RMSE for Linear Regression:", lm_rmse, "\n")
 cat("RMSE for Decision Tree:", dt_rmse, "\n")
 cat("RMSE for Random Forest:", rf_rmse, "\n")
+
+# Collect resamples for model comparison
+results <- resamples(list(
+  Linear_Regression = lm_model,
+  Decision_Tree = dt_model,
+  Random_Forest = rf_model
+))
+
+# Summary of the resamples
+summary(results)
+
+# Boxplots of the resamples
+bwplot(results, main = "Model Performance Comparison")
+
+# Dot plots of the resamples
+dotplot(results, main = "Model Performance Comparison")
