@@ -49,3 +49,16 @@ bootstrap_results <- boot(data = train_data$Chance_of_Admit, statistic = boot_me
 # Display the bootstrapping results
 print(bootstrap_results)
 
+# Load necessary library
+library(caret)
+
+# Define the control using a basic cross-validation (10-fold)
+ctrl <- trainControl(method = "cv", number = 10)
+
+# Train a model using cross-validation (e.g., linear model)
+set.seed(123)
+cv_model <- train(Chance_of_Admit ~ ., data = train_data, method = "lm", trControl = ctrl)
+
+# Display the cross-validation results
+print(cv_model)
+
