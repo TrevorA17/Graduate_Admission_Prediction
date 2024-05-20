@@ -18,3 +18,18 @@ head(admission_data)
 
 # View the dataset in a separate viewer window
 View(admission_data)
+
+# Load necessary library
+library(caret)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Split the data into training and testing sets (80% training, 20% testing)
+trainIndex <- createDataPartition(admission_data$Chance_of_Admit, p = 0.8, list = FALSE)
+train_data <- admission_data[trainIndex, ]
+test_data <- admission_data[-trainIndex, ]
+
+# Display the number of observations in each set
+cat("Number of observations in training set:", nrow(train_data), "\n")
+cat("Number of observations in testing set:", nrow(test_data), "\n")
