@@ -33,3 +33,19 @@ test_data <- admission_data[-trainIndex, ]
 # Display the number of observations in each set
 cat("Number of observations in training set:", nrow(train_data), "\n")
 cat("Number of observations in testing set:", nrow(test_data), "\n")
+
+# Load necessary library
+library(boot)
+
+# Define a function to compute the statistic of interest (mean in this case)
+boot_mean <- function(data, indices) {
+  return(mean(data[indices]))
+}
+
+# Apply bootstrapping on the Chance_of_Admit column
+set.seed(123)
+bootstrap_results <- boot(data = train_data$Chance_of_Admit, statistic = boot_mean, R = 1000)
+
+# Display the bootstrapping results
+print(bootstrap_results)
+
