@@ -1,0 +1,293 @@
+---
+title: "Graduate Admission Prediction"
+author: "Trevor Okinda"
+date: "2024"
+output:
+  github_document: 
+    toc: yes
+    toc_depth: 4
+    fig_width: 6
+    fig_height: 4
+    df_print: default
+editor_options:
+  chunk_output_type: console
+---
+
+# Student Details
+
+|                                              |     |
+|----------------------------------------------|-----|
+| **Student ID Number**                        | 134780 |
+| **Student Name**                             | Trevor Okinda |
+| **BBIT 4.2 Group**                           | C |
+| **Project Name**                             | Graduate Admission Prediction |
+
+# Setup Chunk
+
+**Note:** the following KnitR options have been set as the global defaults: <BR> `knitr::opts_chunk$set(echo = TRUE, warning = FALSE, eval = TRUE, collapse = FALSE, tidy = TRUE)`.
+
+More KnitR options are documented here <https://bookdown.org/yihui/rmarkdown-cookbook/chunk-options.html> and here <https://yihui.org/knitr/options/>.
+
+```{r setup, include=FALSE}
+library(formatR)
+knitr::opts_chunk$set(
+  warning = FALSE,
+  collapse = FALSE
+)
+```
+
+### Source: 
+
+The dataset that was used can be downloaded here: *\<https://www.kaggle.com/datasets/mohansacharya/graduate-admissions?select=Admission_Predict.csv\>*
+
+### Reference:
+
+*\<Acharya, M. S. (2018). Graduate Admission 2 Dataset. Retrieved from Kaggle https://www.kaggle.com/datasets/mohansacharya/graduate-admissions?select=Admission_Predict.csv\>\
+Refer to the APA 7th edition manual for rules on how to cite datasets: <https://apastyle.apa.org/style-grammar-guidelines/references/examples/data-set-references>*
+
+# Exploratory Data Analysis
+## Load dataset
+```{r Load dataset}
+# Load dataset
+admission_data <- read.csv("Admission_Predict.csv", colClasses = c(
+  GRE_Score = "numeric",
+  TOEFL_Score = "numeric",
+  University_Rating = "factor",
+  SOP = "numeric",
+  LOR = "numeric",
+  CGPA = "numeric",
+  Research = "factor",
+  Chance_of_Admit = "numeric"
+))
+
+# Display the structure of the dataset
+str(admission_data)
+
+# View the first few rows of the dataset
+head(admission_data)
+
+# View the dataset in a separate viewer window
+View(admission_data)
+```
+
+## Measures of Frequency
+```{r MOF}
+# Measures of Frequency
+# Count of research experience
+research_count <- table(admission_data$Research)
+print("Frequency of Research Experience:")
+print(research_count)
+```
+
+## Measures of Central Tendency
+```{r MOCT}
+# Measures of Central Tendency
+# Mean, Median, and Mode of GRE Score
+gre_mean <- mean(admission_data$GRE_Score)
+gre_median <- median(admission_data$GRE_Score)
+gre_mode <- as.numeric(names(sort(table(admission_data$GRE_Score), decreasing = TRUE)[1]))
+print("Measures of Central Tendency for GRE Score:")
+print(paste("Mean:", gre_mean))
+print(paste("Median:", gre_median))
+print(paste("Mode:", gre_mode))
+```
+
+## Measures of Distribution
+```{r MOD}
+# Measures of Distribution
+# Range and Standard Deviation of CGPA
+cgpa_range <- range(admission_data$CGPA)
+cgpa_sd <- sd(admission_data$CGPA)
+print("Measures of Distribution for CGPA:")
+print(paste("Range:", cgpa_range))
+print(paste("Standard Deviation:", cgpa_sd))
+```
+
+## Measures of Relationship
+```{r MOR}
+# Measures of Relationship
+# Correlation between TOEFL Score and Chance of Admit
+toefl_chance_cor <- cor(admission_data$TOEFL_Score, admission_data$Chance_of_Admit)
+print("Correlation between TOEFL Score and Chance of Admit:")
+print(toefl_chance_cor)
+```
+
+## ANOVA
+```{r ANOVA}
+# Perform ANOVA
+# Considering University Rating as a factor variable
+anova_result <- aov(Chance_of_Admit ~ University_Rating, data = admission_data)
+
+# Summary of ANOVA results
+summary(anova_result)
+```
+
+## Plots
+```{r Plots}
+# Univariate Plots
+# Histogram of GRE Score
+hist(admission_data$GRE_Score, main = "Histogram of GRE Score", xlab = "GRE Score", col = "skyblue", border = "black")
+
+# Boxplot of TOEFL Score
+boxplot(admission_data$TOEFL_Score, main = "Boxplot of TOEFL Score", ylab = "TOEFL Score", col = "lightgreen", border = "black")
+
+# Multivariate Plots
+# Scatterplot of CGPA vs. Chance of Admit
+plot(admission_data$CGPA, admission_data$Chance_of_Admit, main = "Scatterplot of CGPA vs. Chance of Admission", xlab = "CGPA", ylab = "Chance of Admit", col = "blue", pch = 16)
+
+# Scatterplot Matrix for numeric variables
+pairs(admission_data[, c("GRE_Score", "TOEFL_Score", "CGPA", "Chance_of_Admit")], main = "Scatterplot Matrix", col = "darkorange")
+```
+
+# Preprocessing and Data Transformation
+## Missing Values
+```{r Missing Values}
+# Load necessary library
+library(dplyr)
+
+# Check for missing values in the dataset
+missing_values <- admission_data %>%
+  summarise_all(funs(sum(is.na(.))))
+
+# Display the summary of missing values
+print("Summary of Missing Values:")
+print(missing_values)
+```
+
+# Training Models
+## Data Splitting
+```{r Data Splitting}
+# Load necessary library
+library(caret)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Split the data into training and testing sets (80% training, 20% testing)
+trainIndex <- createDataPartition(admission_data$Chance_of_Admit, p = 0.8, list = FALSE)
+train_data <- admission_data[trainIndex, ]
+test_data <- admission_data[-trainIndex, ]
+
+# Display the number of observations in each set
+cat("Number of observations in training set:", nrow(train_data), "\n")
+cat("Number of observations in testing set:", nrow(test_data), "\n")
+```
+
+## Bootstrapping
+```{r Bootstrapping}
+# Load necessary library
+library(boot)
+
+# Define a function to compute the statistic of interest (mean in this case)
+boot_mean <- function(data, indices) {
+  return(mean(data[indices]))
+}
+
+# Apply bootstrapping on the Chance_of_Admit column
+set.seed(123)
+bootstrap_results <- boot(data = train_data$Chance_of_Admit, statistic = boot_mean, R = 1000)
+
+# Display the bootstrapping results
+print(bootstrap_results)
+```
+
+## Cross-validation
+```{r Cross-validation}
+# Load necessary library
+library(caret)
+
+# Define the control using a basic cross-validation (10-fold)
+ctrl <- trainControl(method = "cv", number = 10)
+
+# Train a model using cross-validation (e.g., linear model)
+set.seed(123)
+cv_model <- train(Chance_of_Admit ~ ., data = train_data, method = "lm", trControl = ctrl)
+
+# Display the cross-validation results
+print(cv_model)
+```
+
+## Training Different Models
+```{r Training Different Models}
+# Load necessary libraries
+library(caret)
+library(rpart)
+library(randomForest)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Train a Linear Regression model
+lm_model <- train(Chance_of_Admit ~ ., data = train_data, method = "lm")
+print("Linear Regression Model:")
+print(lm_model)
+
+# Train a Decision Tree model
+dt_model <- train(Chance_of_Admit ~ ., data = train_data, method = "rpart")
+print("Decision Tree Model:")
+print(dt_model)
+
+# Train a Random Forest model
+rf_model <- train(Chance_of_Admit ~ ., data = train_data, method = "rf")
+print("Random Forest Model:")
+print(rf_model)
+
+# Make predictions on the test set for each model
+lm_predictions <- predict(lm_model, newdata = test_data)
+dt_predictions <- predict(dt_model, newdata = test_data)
+rf_predictions <- predict(rf_model, newdata = test_data)
+
+# Evaluate model performance
+lm_rmse <- sqrt(mean((lm_predictions - test_data$Chance_of_Admit)^2))
+dt_rmse <- sqrt(mean((dt_predictions - test_data$Chance_of_Admit)^2))
+rf_rmse <- sqrt(mean((rf_predictions - test_data$Chance_of_Admit)^2))
+
+cat("RMSE for Linear Regression:", lm_rmse, "\n")
+cat("RMSE for Decision Tree:", dt_rmse, "\n")
+cat("RMSE for Random Forest:", rf_rmse, "\n")
+```
+
+## Performance Comparison
+```{r Performance Comparison}
+# Collect resamples for model comparison
+results <- resamples(list(
+  Linear_Regression = lm_model,
+  Decision_Tree = dt_model,
+  Random_Forest = rf_model
+))
+
+# Summary of the resamples
+summary(results)
+
+# Boxplots of the resamples
+bwplot(results, main = "Model Performance Comparison")
+
+# Dot plots of the resamples
+dotplot(results, main = "Model Performance Comparison")
+
+```
+
+## Saving Model
+```{r Saving Model}
+# Load the saved linear regression model
+loaded_linear_regression_model <- readRDS("./models/linear_regression_model.rds")
+
+# Prepare new data for prediction (example data similar to the admission dataset structure)
+new_data <- data.frame(
+  GRE_Score = c(330, 320, 310),  # Example GRE_Score values
+  TOEFL_Score = c(115, 110, 105),  # Example TOEFL_Score values
+  University_Rating = factor(c(5, 4, 3), levels = c(1, 2, 3, 4, 5)),  # Example University_Rating values
+  SOP = c(4.5, 4.0, 3.5),  # Example SOP values
+  LOR = c(4.5, 4.0, 3.5),  # Example LOR values
+  CGPA = c(9.5, 8.5, 7.5),  # Example CGPA values
+  Research = factor(c(1, 0, 1), levels = c(0, 1))  # Example Research values
+)
+
+# Use the loaded model to make predictions for new data
+predictions_loaded_model <- predict(loaded_linear_regression_model, newdata = new_data)
+
+# Print predictions
+print(predictions_loaded_model)
+
+```
+
